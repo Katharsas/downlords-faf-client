@@ -3,6 +3,7 @@ package com.faforever.client.map;
 import com.faforever.client.i18n.I18n;
 import com.faforever.client.notification.NotificationService;
 import com.faforever.client.player.PlayerService;
+import com.faforever.client.remote.domain.Player;
 import com.faforever.client.reporting.ReportingService;
 import com.faforever.client.test.AbstractPlainJavaFxTest;
 import com.faforever.client.util.TimeService;
@@ -19,9 +20,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.testfx.util.WaitForAsyncUtils;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -79,10 +82,44 @@ public class MapDetailControllerTest extends AbstractPlainJavaFxTest {
   }
 
   @Test
-  public void onInstallButtonClicked() throws Exception {
+  public void onInstallButtonClicked() {
     instance.onInstallButtonClicked();
     WaitForAsyncUtils.waitForFxEvents();
     assertThat(instance.uninstallButton.isVisible(), is(true));
     assertThat(instance.installButton.isVisible(), is(false));
+  }
+
+  @Test
+  public void testAuthorControls() {
+    when(playerService.getCurrentPlayer()).then(invocation -> {
+      Player player = new Player();
+      player.setLogin("axel12");
+      return Optional.of(player);
+    });
+    MapBean mapBean = new MapBean();
+    mapBean.setAuthor("axel12");
+    mapBean.setIsRanked(true);
+    mapBean.setIsHidden(false);
+    instance.setMap(mapBean);
+
+    assertThat(instance.hiddenRow.getPrefHeight(), not(is(0)));
+    assertThat(instance.unrankButton.isVisible(), is(true));
+  }
+
+  @Test
+  public void testAuthorControlsHiddenWhenPlayerNotAuthor() {
+    when(playerService.getCurrentPlayer()).then(invocation -> {
+      Player player = new Player();
+      player.setLogin("Downlord");
+      return Optional.of(player);
+    });
+    MapBean mapBean = new MapBean();
+    mapBean.setAuthor("axel12");
+    mapBean.setIsRanked(true);
+    mapBean.setIsHidden(false);
+    instance.setMap(mapBean);
+
+    assertThat(instance.hiddenRow.getPrefHeight(), is(0));
+    assertThat(instance.unrankButton.isVisible(), is(false));
   }
 }

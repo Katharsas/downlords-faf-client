@@ -364,7 +364,7 @@ public class MapServiceImpl implements MapService {
   }
 
   @Override
-  @CacheEvict(CacheNames.MAPS)
+  @CacheEvict(value = CacheNames.MAPS, allEntries = true)
   public void evictCache() {
     // Nothing to see here
   }
@@ -405,6 +405,23 @@ public class MapServiceImpl implements MapService {
   @Override
   public CompletableFuture<List<MapBean>> getLadderMaps(int loadMoreCount, int page) {
     return fafService.getLadder1v1Maps(loadMoreCount, page);
+  }
+
+  @Override
+  public CompletableFuture<List<MapBean>> getOwnedMaps(int playerId, int loadMoreCount, int page) {
+    return fafService.getOwnedMaps(playerId, loadMoreCount, page);
+  }
+
+  @Override
+  public CompletableFuture<Void> hideMapVersion(MapBean map) {
+    evictCache();
+    return fafService.hideMapVersion(map);
+  }
+
+  @Override
+  public CompletableFuture<Void> unrankMapVersion(MapBean map) {
+    evictCache();
+    return fafService.unrankeMapVersion(map);
   }
 
   private CompletableFuture<Void> downloadAndInstallMap(String folderName, URL downloadUrl, @Nullable DoubleProperty progressProperty, @Nullable StringProperty titleProperty) {

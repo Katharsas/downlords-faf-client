@@ -3,9 +3,11 @@ package com.faforever.client.map;
 import com.faforever.client.api.dto.MapVersion;
 import com.faforever.client.vault.review.Review;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -35,6 +37,8 @@ public class MapBean implements Comparable<MapBean> {
   private final ObjectProperty<ComparableVersion> version;
   private final StringProperty id;
   private final StringProperty author;
+  private final BooleanProperty isHidden;
+  private final BooleanProperty isRanked;
   private final ObjectProperty<URL> downloadUrl;
   private final ObjectProperty<URL> smallThumbnailUrl;
   private final ObjectProperty<URL> largeThumbnailUrl;
@@ -60,6 +64,8 @@ public class MapBean implements Comparable<MapBean> {
     type = new SimpleObjectProperty<>();
     reviews = new SimpleListProperty<>(FXCollections.observableArrayList(param
         -> new Observable[]{param.scoreProperty(), param.textProperty()}));
+    isHidden = new SimpleBooleanProperty();
+    isRanked = new SimpleBooleanProperty();
   }
 
   public static MapBean fromMapDto(com.faforever.client.api.dto.Map map) {
@@ -108,6 +114,8 @@ public class MapBean implements Comparable<MapBean> {
     mapBean.getReviews().setAll(mapVersion.getReviews().parallelStream()
         .map(Review::fromDto)
         .collect(Collectors.toList()));
+    mapBean.setIsHidden(mapVersion.getHidden());
+    mapBean.setIsRanked(mapVersion.getRanked());
     return mapBean;
   }
 
@@ -302,6 +310,30 @@ public class MapBean implements Comparable<MapBean> {
 
   public ListProperty<Review> reviewsProperty() {
     return reviews;
+  }
+
+  public boolean isHidden() {
+    return isHidden.get();
+  }
+
+  public BooleanProperty isHiddenProperty() {
+    return isHidden;
+  }
+
+  public void setIsHidden(boolean isHidden) {
+    this.isHidden.set(isHidden);
+  }
+
+  public boolean isRanked() {
+    return isRanked.get();
+  }
+
+  public BooleanProperty isRankedProperty() {
+    return isRanked;
+  }
+
+  public void setIsRanked(boolean isRanked) {
+    this.isRanked.set(isRanked);
   }
 
   public enum Type {

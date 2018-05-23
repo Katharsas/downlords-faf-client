@@ -222,7 +222,7 @@ public class FafServiceImpl implements FafService {
   }
 
   @Override
-  @CacheEvict(CacheNames.MODS)
+  @CacheEvict(value = CacheNames.MODS, allEntries = true)
   public void evictModsCache() {
     // Cache eviction by annotation
   }
@@ -478,6 +478,35 @@ public class FafServiceImpl implements FafService {
         .map(ladder1v1Map -> MapBean.fromMapVersionDto(ladder1v1Map.getMapVersion()))
         .collect(toList());
     return CompletableFuture.completedFuture(maps);
+  }
+
+  @Async
+  @Override
+  public CompletableFuture<List<MapBean>> getOwnedMaps(int playerId, int loadMoreCount, int page) {
+    List<MapVersion> maps = fafApiAccessor.getOwnedMaps(playerId, loadMoreCount, page);
+    return CompletableFuture.completedFuture(maps.stream().map(MapBean::fromMapVersionDto).collect(toList()));
+  }
+
+  @Async
+  @Override
+  public CompletableFuture<Void> hideMapVersion(MapBean map) {
+    String id = map.getId();
+    MapVersion mapVersion = new MapVersion();
+    mapVersion.setHidden(true);
+    mapVersion.setId(map.getId());
+    fafApiAccessor.updateMapVersion(id, mapVersion);
+    return null;
+  }
+
+  @Override
+  @Async
+  public CompletableFuture<Void> unrankeMapVersion(MapBean map) {
+    String id = map.getId();
+    MapVersion mapVersion = new MapVersion();
+    mapVersion.setRanked(false);
+    mapVersion.setId(map.getId());
+    fafApiAccessor.updateMapVersion(id, mapVersion);
+    return null;
   }
 
   @Override

@@ -121,4 +121,8 @@ public interface FafApiAccessor {
   List<Mod> findModsByQuery(SearchConfig query, int page, int maxResults);
 
   List<Ladder1v1Map> getLadder1v1Maps(int count, int page);
+
+  List<MapVersion> getOwnedMaps(int playerId, int loadMoreCount, int page);
+
+  void updateMapVersion(String id, MapVersion mapVersion);
 }

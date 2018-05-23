@@ -28,6 +28,7 @@ import com.faforever.client.vault.search.SearchController.SearchConfig;
 import com.faforever.client.vault.search.SearchController.SortConfig;
 import com.faforever.commons.io.ByteCountListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import org.springframework.scheduling.annotation.Async;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -137,6 +138,9 @@ public interface FafService {
 
   CompletableFuture<Void> deleteGameReview(Review review);
 
+  @Async
+  CompletableFuture<Void> unrankeMapVersion(MapBean map);
+
   CompletableFuture<Optional<Clan>> getClanByTag(String tag);
 
   Optional<MapBean> findMapById(String id);
@@ -154,4 +158,8 @@ public interface FafService {
   void restoreGameSession(int id);
 
   CompletableFuture<List<MapBean>> getLadder1v1Maps(int count, int page);
+
+  CompletableFuture<List<MapBean>> getOwnedMaps(int playerId, int loadMoreCount, int page);
+
+  CompletableFuture<Void> hideMapVersion(MapBean map);
 }

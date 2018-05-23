@@ -74,4 +74,10 @@ public interface MapService {
   Optional<MapBean> findMap(String id);
 
   CompletableFuture<List<MapBean>> getLadderMaps(int loadMoreCount, int page);
+
+  CompletableFuture<List<MapBean>> getOwnedMaps(int playerId, int loadMoreCount, int page);
+
+  CompletableFuture<Void> hideMapVersion(MapBean map);
+
+  CompletableFuture<Void> unrankMapVersion(MapBean map);
 }

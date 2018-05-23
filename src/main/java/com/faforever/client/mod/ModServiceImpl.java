@@ -358,7 +358,7 @@ public class ModServiceImpl implements ModService {
   }
 
   @Override
-  @CacheEvict(CacheNames.MODS)
+  @CacheEvict(value = CacheNames.MODS, allEntries = true)
   public void evictCache() {
     // Nothing to see here
   }
