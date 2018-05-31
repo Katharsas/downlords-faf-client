@@ -31,6 +31,7 @@ import org.testfx.util.WaitForAsyncUtils;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Optional;
 
 import static com.faforever.client.theme.UiService.CHAT_CONTAINER;
 import static junit.framework.TestCase.assertTrue;
@@ -98,7 +99,7 @@ public class PrivateChatTabControllerTest extends AbstractPlainJavaFxTest {
     playerName = "testUser";
     Player player = new Player(playerName);
 
-    when(playerService.getPlayerForUsername(playerName)).thenReturn(player);
+    when(playerService.getPlayerForUsername(playerName)).thenReturn(Optional.of(player));
     when(userService.getUsername()).thenReturn(playerName);
     when(uiService.getThemeFileUrl(CHAT_CONTAINER)).then(invocation -> getThemeFileUrl(invocation.getArgument(0)));
 

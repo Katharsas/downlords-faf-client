@@ -238,7 +238,7 @@ public final class JavaFxUtil {
    * Since the JavaFX properties API is not thread safe, adding listeners must be synchronized on the property - which
    * is what this method does.
    */
-  public static <T> void addListener(Observable observable, InvalidationListener listener) {
+  public static void addListener(Observable observable, InvalidationListener listener) {
     synchronized (observable) {
       observable.addListener(listener);
     }
@@ -281,6 +281,26 @@ public final class JavaFxUtil {
   public static <T> void addListener(ObservableSet<T> set, SetChangeListener<T> listener) {
     synchronized (set) {
       set.addListener(listener);
+    }
+  }
+
+  /**
+   * Since the JavaFX properties API is not thread safe, removing listeners must be synchronized on the property - which
+   * is what this method does.
+   */
+  public static <T> void removeListener(ObservableValue<T> observableValue, ChangeListener<? super T> listener) {
+    synchronized (observableValue) {
+      observableValue.removeListener(listener);
+    }
+  }
+
+  /**
+   * Since the JavaFX properties API is not thread safe, removing listeners must be synchronized on the property - which
+   * is what this method does.
+   */
+  public static void removeListener(Observable observable, InvalidationListener listener) {
+    synchronized (observable) {
+      observable.removeListener(listener);
     }
   }
 

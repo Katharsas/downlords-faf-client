@@ -55,7 +55,7 @@ public class ChatController extends AbstractViewController<Node> {
   }
 
   private void onChannelLeft(Channel channel) {
-    removeTab(channel.getName());
+    Platform.runLater(() -> removeTab(channel.getName()));
   }
 
   private void onChannelJoined(Channel channel) {
@@ -63,21 +63,27 @@ public class ChatController extends AbstractViewController<Node> {
   }
 
   private void onDisconnected() {
-    connectingProgressPane.setVisible(true);
-    tabPane.setVisible(false);
-    noOpenTabsContainer.setVisible(false);
+    Platform.runLater(() -> {
+      connectingProgressPane.setVisible(true);
+      tabPane.setVisible(false);
+      noOpenTabsContainer.setVisible(false);
+    });
   }
 
   private void onConnected() {
-    connectingProgressPane.setVisible(false);
-    tabPane.setVisible(true);
-    noOpenTabsContainer.setVisible(false);
+    Platform.runLater(() -> {
+      connectingProgressPane.setVisible(false);
+      tabPane.setVisible(true);
+      noOpenTabsContainer.setVisible(false);
+    });
   }
 
   private void onConnecting() {
-    connectingProgressPane.setVisible(true);
-    tabPane.setVisible(false);
-    noOpenTabsContainer.setVisible(false);
+    Platform.runLater(() -> {
+      connectingProgressPane.setVisible(true);
+      tabPane.setVisible(false);
+      noOpenTabsContainer.setVisible(false);
+    });
   }
 
   private void onLoggedOut() {
@@ -207,7 +213,7 @@ public class ChatController extends AbstractViewController<Node> {
         onChatUserLeftChannel(channelName, change.getValueRemoved().getUsername());
       }
       if (change.wasAdded()) {
-        onUserJoinedChannel(channelName, change.getValueAdded());
+        onUserJoinedChannel(change.getValueAdded());
       }
     });
     chatService.joinChannel(channelName);
@@ -223,7 +229,7 @@ public class ChatController extends AbstractViewController<Node> {
     }
   }
 
-  private void onUserJoinedChannel(String channelName, ChatChannelUser chatUser) {
+  private void onUserJoinedChannel(ChatChannelUser chatUser) {
     Platform.runLater(() -> {
       if (isCurrentUser(chatUser)) {
         onConnected();
