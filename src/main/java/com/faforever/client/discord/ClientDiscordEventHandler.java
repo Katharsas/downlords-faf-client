@@ -1,46 +1,81 @@
 package com.faforever.client.discord;
 
-import com.github.psnrigner.discordrpcjava.DiscordEventHandler;
-import com.github.psnrigner.discordrpcjava.DiscordJoinRequest;
-import com.github.psnrigner.discordrpcjava.ErrorCode;
+
+import com.faforever.client.notification.NotificationService;
+import com.faforever.client.preferences.PreferencesService;
 import lombok.extern.slf4j.Slf4j;
+import net.arikia.dev.drpc.DiscordEventHandlers;
+import net.arikia.dev.drpc.DiscordRPC;
+import net.arikia.dev.drpc.DiscordRPC.DiscordReply;
+import net.arikia.dev.drpc.DiscordUser;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
-public class ClientDiscordEventHandler implements DiscordEventHandler {
-  @Override
-  public void ready() {
-    log.trace("Discord is ready");
+public class ClientDiscordEventHandler extends DiscordEventHandlers {
+  private final ApplicationEventPublisher applicationEventPublisher;
+  private final NotificationService notificationService;
+  private final PreferencesService preferencesService;
+
+  public ClientDiscordEventHandler(ApplicationEventPublisher applicationEventPublisher, NotificationService notificationService, PreferencesService preferencesService) {
+    this.applicationEventPublisher = applicationEventPublisher;
+    this.notificationService = notificationService;
+    this.preferencesService = preferencesService;
+    ready = this::onDiscordReady;
+    disconnected = this::onDisconnected;
+    errored = this::onError;
+    spectateGame = this::onSpecate;
+    joinGame = this::joinGame;
+    joinRequest = this::respondeOnJoinRequest;
   }
 
-  @Override
-  public void disconnected(ErrorCode errorCode, String message) {
-    if (message != null && !message.equals("SUCCESS")) {
-      log.error("Discord disconnected , message: {} , code: {}", errorCode, message);
-    } else {
-      log.trace("Discord disconnected , message: {} , code: {}", errorCode, message);
+  private void respondeOnJoinRequest(DiscordUser discordUser) {
+    //Always answer with yes
+    if (preferencesService.getPreferences().isDisallowJoinsViaDiscord()) {
+      DiscordRPC.discordRespond(discordUser.userId, DiscordReply.NO);
+      return;
+    }
+    DiscordRPC.discordRespond(discordUser.userId, DiscordReply.YES);
+  }
+
+  private void joinGame(String s) {
+    try {
+      Pattern compile = Pattern.compile(DiscordRichPresenceService.JOIN_SECRET);
+      Matcher matcher = compile.matcher(s);
+      int gameId = Integer.parseInt(matcher.group(DiscordRichPresenceService.GAME_ID_REGEX_NAME));
+      applicationEventPublisher.publishEvent(new DiscordJoinEvent(gameId));
+    } catch (Exception e) {
+      notificationService.addImmediateErrorNotification(e, "game.couldNotJoin", s.replace("g", ""));
+      log.error("Could not join game from discord rich presence", e);
     }
   }
 
-  @Override
-  public void errored(ErrorCode errorCode, String message) {
-    log.error("Discord had an error , message: {} , code: {}", errorCode, message);
+  private void onSpecate(String s) {
+    try {
+      Pattern compile = Pattern.compile(DiscordRichPresenceService.SPECTATE_SECRET);
+      Matcher matcher = compile.matcher(s);
+      int replayId = Integer.parseInt(matcher.group(DiscordRichPresenceService.GAME_ID_REGEX_NAME));
+      int playerId = Integer.parseInt(matcher.group(DiscordRichPresenceService.PLAYER_ID_REGEX_NAME));
+      applicationEventPublisher.publishEvent(new DiscordSpectateEvent(replayId, playerId));
+    } catch (Exception e) {
+      notificationService.addImmediateErrorNotification(e, "replay.couldNotOpen", s.replace("s", ""));
+      log.error("Could not join game from discord rich presence", e);
+    }
   }
 
-  @Override
-  public void joinGame(String joinSecret) {
-    log.info("Discord requests to join game joinSecrete: {}", joinSecret);
+  private void onError(int i, String s) {
+    log.error("Discord error , {}, {}", i, s);
   }
 
-  @Override
-  public void spectateGame(String spectateSecret) {
-    log.info("Discord requests to spectate game spectateSecret: {}", spectateSecret);
-
+  private void onDisconnected(int i, String s) {
+    log.info("Discord disconnected , {}, {}", i, s);
   }
 
-  @Override
-  public void joinRequest(DiscordJoinRequest joinRequest) {
-    log.info("Discord user requests to join current game ,userName: {}", joinRequest.getUsername());
+  private void onDiscordReady(DiscordUser discordUser) {
+    log.info("Discord is ready, with user: {}", discordUser.username);
   }
 }

@@ -140,5 +140,8 @@ public class ClientProperties {
   @Data
   public static class DiscordConfig {
     private String applicationId;
+    private String smallImageKey;
+    private String bigImageKey;
+
   }
 }

@@ -1,6 +1,7 @@
 package com.faforever.client.game;
 
 import com.faforever.client.config.ClientProperties;
+import com.faforever.client.discord.DiscordJoinEvent;
 import com.faforever.client.discord.DiscordRichPresenceService;
 import com.faforever.client.fa.ForgedAllianceService;
 import com.faforever.client.fa.RatingMode;
@@ -55,6 +56,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -63,7 +65,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.nio.file.Path;
-import java.time.Instant;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -172,15 +174,26 @@ public class GameService {
         return;
       }
 
+      ChangeListener<Number> numberOfPlayersChangedListener = new ChangeListener<Number>() {
+        @Override
+        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+          discordRichPresenceService.updatePlayedGameTo(currentGame.get(), playerService.getCurrentPlayer().orElseThrow(() -> new IllegalStateException("player must be set")).getId());
+        }
+      };
+
+      JavaFxUtil.addListener(newValue.numPlayersProperty(), numberOfPlayersChangedListener);
+
       ChangeListener<GameStatus> currentGameEndedListener = new ChangeListener<GameStatus>() {
         @Override
         public void changed(ObservableValue<? extends GameStatus> observable1, GameStatus oldStatus, GameStatus newStatus) {
-          discordRichPresenceService.updatePlayedGameTo(currentGame.get());
+          discordRichPresenceService.updatePlayedGameTo(currentGame.get(), playerService.getCurrentPlayer().orElseThrow(() -> new IllegalStateException("player must be set")).getId());
           if (oldStatus == GameStatus.PLAYING && newStatus == GameStatus.CLOSED) {
             GameService.this.onCurrentGameEnded();
           }
           if (newStatus == GameStatus.CLOSED) {
             newValue.statusProperty().removeListener(this);
+            newValue.numPlayersProperty().removeListener(numberOfPlayersChangedListener);
+
           }
         }
       };
@@ -215,15 +228,6 @@ public class GameService {
   }
 
   public CompletableFuture<Void> hostGame(NewGameInfo newGameInfo) {
-    Game game = new Game();
-    game.setId(1);
-    game.setTitle("test title");
-    game.setStartTime(Instant.now());
-    game.setStatus(GameStatus.PLAYING);
-    game.setNumPlayers(3);
-    game.setMaxPlayers(12);
-    game.setHost("axel12");
-    discordRichPresenceService.updatePlayedGameTo(game);
     if (isRunning()) {
       logger.debug("Game is running, ignoring host request");
       return completedFuture(null);
@@ -646,5 +650,15 @@ public class GameService {
     synchronized (uidToGameInfoBean) {
       uidToGameInfoBean.remove(gameInfoMessage.getUid());
     }
+  }
+
+  @EventListener
+  public void onDiscordGameJoinEvent(DiscordJoinEvent discordJoinEvent) {
+    Integer gameId = discordJoinEvent.getGameId();
+    Game game = getByUid(gameId);
+    if (game == null) {
+      throw new IllegalStateException(MessageFormat.format("Could not find game to join, with id: {0}", discordJoinEvent.getGameId()));
+    }
+    joinGame(game, "");
   }
 }
