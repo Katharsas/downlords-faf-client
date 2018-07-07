@@ -56,7 +56,6 @@ public class Preferences {
   private final ObjectProperty<TilesSortingOrder> gameTileSortingOrder;
   private final ObjectProperty<UnitDataBaseType> unitDataBaseType;
   private final MapProperty<URI, ArrayList<HttpCookie>> storedCookies;
-  private final BooleanProperty lastGameOnlyFriends;
 
   public Preferences() {
     gameTileSortingOrder = new SimpleObjectProperty<>(TilesSortingOrder.PLAYER_DES);
@@ -85,7 +84,6 @@ public class Preferences {
     storedCookies = new SimpleMapProperty<>(FXCollections.observableHashMap());
     showPasswordProtectedGames = new SimpleBooleanProperty(true);
     showModdedGames = new SimpleBooleanProperty(true);
-    lastGameOnlyFriends = new SimpleBooleanProperty();
   }
 
   public VaultPrefs getVaultPrefs() {
@@ -275,18 +273,6 @@ public class Preferences {
 
   public ObservableMap<URI, ArrayList<HttpCookie>> getStoredCookies() {
     return storedCookies.get();
-  }
-
-  public boolean isLastGameOnlyFriends() {
-    return lastGameOnlyFriends.get();
-  }
-
-  public void setLastGameOnlyFriends(boolean lastGameOnlyFriends) {
-    this.lastGameOnlyFriends.set(lastGameOnlyFriends);
-  }
-
-  public BooleanProperty lastGameOnlyFriendsProperty() {
-    return lastGameOnlyFriends;
   }
 
   public enum UnitDataBaseType {

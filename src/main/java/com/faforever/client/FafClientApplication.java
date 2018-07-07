@@ -41,11 +41,6 @@ public class FafClientApplication extends Application {
 
   private ConfigurableApplicationContext applicationContext;
 
-  public static void main(String[] args) {
-    PreferencesService.configureLogging();
-    launch(args);
-  }
-
   private static String[] getAdditionalProfiles() {
     List<String> additionalProfiles = new ArrayList<>();
 
@@ -75,6 +70,7 @@ public class FafClientApplication extends Application {
 
   @Override
   public void start(Stage stage) {
+    PreferencesService.configureLogging();
     StageHolder.setStage(stage);
     stage.initStyle(StageStyle.UNDECORATED);
     showMainWindow();

@@ -283,8 +283,7 @@ public class FafServerAccessorImpl extends AbstractServerAccessor implements Faf
         new boolean[0],
         newGameInfo.getFeaturedMod().getTechnicalName(),
         newGameInfo.getPassword(),
-        null,
-        newGameInfo.getGameVisibility()
+        null
     );
 
     gameLaunchFuture = new CompletableFuture<>();

@@ -34,7 +34,6 @@ import com.faforever.client.remote.domain.IceServersServerMessage.IceServer;
 import com.faforever.client.remote.domain.LoginMessage;
 import com.faforever.client.remote.domain.ServerMessage;
 import com.faforever.client.replay.Replay;
-import com.faforever.client.tournament.TournamentBean;
 import com.faforever.client.vault.review.Review;
 import com.faforever.client.vault.search.SearchController.SearchConfig;
 import com.faforever.client.vault.search.SearchController.SortConfig;
@@ -497,13 +496,5 @@ public class FafService {
   
   public void sendIceMessage(int remotePlayerId, Object message) {
     fafServerAccessor.sendGpgMessage(new IceMessage(remotePlayerId, message));
-  }
-
-  @Async
-  public CompletableFuture<List<TournamentBean>> getAllTournaments() {
-    return CompletableFuture.completedFuture(fafApiAccessor.getAllTournaments()
-        .stream()
-        .map(TournamentBean::fromTournamentDto)
-        .collect(toList()));
   }
 }

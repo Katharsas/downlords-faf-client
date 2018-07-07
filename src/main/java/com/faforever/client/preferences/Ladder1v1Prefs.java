@@ -12,7 +12,7 @@ public class Ladder1v1Prefs {
   private final ListProperty<Faction> factions;
 
   public Ladder1v1Prefs() {
-    this.factions = new SimpleListProperty<>(observableArrayList(Faction.AEON, Faction.CYBRAN, Faction.UEF, Faction.SERAPHIM));
+    this.factions = new SimpleListProperty<>(observableArrayList(Faction.values()));
   }
 
   public ObservableList<Faction> getFactions() {
