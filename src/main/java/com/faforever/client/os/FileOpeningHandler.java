@@ -3,11 +3,12 @@ package com.faforever.client.os;
 import com.faforever.client.replay.ReplayService;
 import com.install4j.api.launcher.StartupNotification;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.InitializingBean;
 
+import java.awt.Desktop;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -27,8 +28,12 @@ public class FileOpeningHandler implements ApplicationRunner, InitializingBean {
 
   @Override
   public void afterPropertiesSet() {
-    log.debug("Registering file opening handler: {}", this.getClass().getName());
-    StartupNotification.registerStartupListener(this::onStartup);
+    if (Desktop.isDesktopSupported()) {
+      log.debug("Registering file opening handler: {}", this.getClass().getName());
+      StartupNotification.registerStartupListener(this::onStartup);
+    } else {
+      log.warn("This desktop is not supported by awt therefore file opening handler was not registered");
+    }
   }
 
   private void onStartup(String parameters) {
